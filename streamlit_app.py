@@ -64,8 +64,17 @@ def voltage_colour(vm_pu: float) -> str:
 
 def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
     fig = go.Figure()
-    bus_x = net.bus["geo"].apply(lambda g: g[0])  # extract x from (x, y) tuple
-    bus_y = net.bus["geo"].apply(lambda g: g[1])  # extract y from (x, y) tuple
+
+    # Use bus_geodata if available, otherwise default to index order
+    if hasattr(net, "bus_geodata") and not net.bus_geodata.empty:
+        bus_x = net.bus_geodata["x"]
+        bus_y = net.bus_geodata["y"]
+    else:
+        # fallback: lay out buses on a line
+        bus_x = pd.Series(range(len(net.bus)), index=net.bus.index)
+        bus_y = pd.Series([0] * len(net.bus), index=net.bus.index)
+
+    # Plot lines
     for l_idx, line in net.line.iterrows():
         fb, tb = line.from_bus, line.to_bus
         util = net.res_line.loading_percent.at[l_idx]
@@ -80,6 +89,8 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
                 showlegend=False,
             )
         )
+
+    # Plot transformers
     for t_idx, trafo in net.trafo.iterrows():
         fb, tb = trafo.hv_bus, trafo.lv_bus
         util = net.res_trafo.loading_percent.at[t_idx]
@@ -94,6 +105,8 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
                 showlegend=False,
             )
         )
+
+    # Plot buses
     fig.add_trace(
         go.Scatter(
             x=bus_x,
@@ -111,6 +124,7 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
             showlegend=False,
         )
     )
+
     fig.update_layout(
         margin=dict(l=20, r=20, t=20, b=20),
         xaxis=dict(visible=False),
