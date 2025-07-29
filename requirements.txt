@@ -1,5 +1,5 @@
 streamlit
-pandapower
+pandapower["all"]
 plotly
 pandas
 numpy
