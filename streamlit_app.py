@@ -110,6 +110,7 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
         Tuple of (x_coords, y_coords) as pandas Series
     """
     # Check if bus_geodata exists (preferred method)
+    print("GETTING BUS COORDINATES")
     if hasattr(net, "bus_geodata") and not net.bus_geodata.empty:
         print("Using bus_geodata")
         bus_x = net.bus_geodata["x"]
@@ -125,10 +126,12 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
                 bus_y = geo_data.apply(lambda g: g[1] if g is not None else 0)
             else:
                 # Generate default layout if geo data is malformed
+                st.error("Generating grid!")
                 bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
                 bus_y = pd.Series([i // 5 for i in net.bus.index], index=net.bus.index)
         else:
             print("Falling back to grid layout!")
+            st.error("Generating grid!")
             # Generate simple grid layout as fallback
             bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
             bus_y = pd.Series([i // 5 for i in net.bus.index], index=net.bus.index)
