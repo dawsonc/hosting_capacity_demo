@@ -125,7 +125,7 @@ def main() -> None:
     def get_base_network() -> pp.pandapowerNet:
         return build_network()
 
-    net = get_base_network().copy(deep=True)
+    net = get_base_network().copy()
     st.sidebar.header("Study parameters")
     pv_bus = st.sidebar.selectbox("PV connection bus", options=net.bus.index, index=5)
     pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 500, value=0, step=10)
