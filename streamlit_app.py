@@ -64,8 +64,8 @@ def voltage_colour(vm_pu: float) -> str:
 
 def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
     fig = go.Figure()
-    bus_x = net.bus_geodata.x
-    bus_y = net.bus_geodata.y
+    bus_x = net.bus.geo.x
+    bus_y = net.bus.geo.y
     for l_idx, line in net.line.iterrows():
         fb, tb = line.from_bus, line.to_bus
         util = net.res_line.loading_percent.at[l_idx]
@@ -128,7 +128,7 @@ def main() -> None:
 
     net = copy.deepcopy(get_base_network())
     st.sidebar.header("Study parameters")
-    print(dir(net.bus))
+    print(dir(net.bus.geo))
     pv_bus = st.sidebar.selectbox("PV connection bus", options=list(net.bus.index), index=5)
     pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 500, value=0, step=10)
     st.sidebar.write(f"**PV @ bus {pv_bus}:** {pv_kw} kW")
