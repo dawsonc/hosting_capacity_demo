@@ -111,6 +111,7 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
     """
     # Check if bus_geodata exists (preferred method)
     if hasattr(net, "bus_geodata") and not net.bus_geodata.empty:
+        print("Using bus_geodata")
         bus_x = net.bus_geodata["x"]
         bus_y = net.bus_geodata["y"]
     else:
