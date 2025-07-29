@@ -117,18 +117,10 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
     else:
         # Fallback: check if 'geo' column exists in bus table
         if "geo" in net.bus.columns and not net.bus["geo"].isna().all():
-            # Handle different geo data formats
             geo_data = net.bus["geo"]
-            if isinstance(geo_data.iloc[0], dict) and 'coordinates' in geo_data.iloc[0]:
-                # GeoJSON format: {"coordinates": [lon, lat], "type": "Point"}
-                bus_x = geo_data.apply(lambda g: g['coordinates'][0] if g is not None and 'coordinates' in g else 0)
-                bus_y = geo_data.apply(lambda g: g['coordinates'][1] if g is not None and 'coordinates' in g else 0)
-            else:
-                st.error(geo_data.iloc[0])
-                st.error("coordinates" in geo_data.iloc[0])
-                # Generate default layout if geo data is malformed
-                bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
-                bus_y = pd.Series([i // 5 for i in net.bus.index], index=net.bus.index)
+            # GeoJSON format: {"coordinates": [lon, lat], "type": "Point"}
+            bus_x = geo_data.apply(lambda g: g['coordinates'][0] if g is not None and 'coordinates' in g else 0)
+            bus_y = geo_data.apply(lambda g: g['coordinates'][1] if g is not None and 'coordinates' in g else 0)
         else:
             # Generate simple grid layout as fallback
             bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
