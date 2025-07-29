@@ -64,8 +64,8 @@ def voltage_colour(vm_pu: float) -> str:
 
 def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
     fig = go.Figure()
-    bus_x = net.bus.geo.x
-    bus_y = net.bus.geo.y
+    bus_x = net.bus["geo"].apply(lambda g: g[0])  # extract x from (x, y) tuple
+    bus_y = net.bus["geo"].apply(lambda g: g[1])  # extract y from (x, y) tuple
     for l_idx, line in net.line.iterrows():
         fb, tb = line.from_bus, line.to_bus
         util = net.res_line.loading_percent.at[l_idx]
