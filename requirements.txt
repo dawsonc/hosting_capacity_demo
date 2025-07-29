@@ -1,5 +1,6 @@
 streamlit
-pandapower[all]
+pandapower
 plotly
 pandas
+geopandas
 numpy
