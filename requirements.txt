@@ -1,5 +1,5 @@
 streamlit
-pandapower==2.15.1
+pandapower
 plotly
 pandas
 geopandas
