@@ -124,6 +124,8 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
                 bus_x = geo_data.apply(lambda g: g['coordinates'][0] if g is not None and 'coordinates' in g else 0)
                 bus_y = geo_data.apply(lambda g: g['coordinates'][1] if g is not None and 'coordinates' in g else 0)
             else:
+                st.error(geo_data.iloc[0])
+                st.error("coordinates" in geo_data.iloc[0])
                 # Generate default layout if geo data is malformed
                 bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
                 bus_y = pd.Series([i // 5 for i in net.bus.index], index=net.bus.index)
