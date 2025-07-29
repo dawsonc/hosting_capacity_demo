@@ -128,7 +128,7 @@ def main() -> None:
 
     net = copy.deepcopy(get_base_network())
     st.sidebar.header("Study parameters")
-    print(dir(net.bus.geo))
+    print(net.bus.geo)
     pv_bus = st.sidebar.selectbox("PV connection bus", options=list(net.bus.index), index=5)
     pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 500, value=0, step=10)
     st.sidebar.write(f"**PV @ bus {pv_bus}:** {pv_kw} kW")
