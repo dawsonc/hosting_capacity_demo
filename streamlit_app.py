@@ -154,41 +154,41 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
     # Get bus coordinates
     bus_x, bus_y = get_bus_coordinates(net)
 
-    # Plot lines with enhanced hovers
-    for l_idx, line in net.line.iterrows():
-        fb, tb = line.from_bus, line.to_bus
-        util = net.res_line.loading_percent.at[l_idx]
-        current_ka = net.res_line.i_ka.at[l_idx]
-        p_from_mw = net.res_line.p_from_mw.at[l_idx]
-        q_from_mvar = net.res_line.q_from_mvar.at[l_idx]
+    # # Plot lines with enhanced hovers
+    # for l_idx, line in net.line.iterrows():
+    #     fb, tb = line.from_bus, line.to_bus
+    #     util = net.res_line.loading_percent.at[l_idx]
+    #     current_ka = net.res_line.i_ka.at[l_idx]
+    #     p_from_mw = net.res_line.p_from_mw.at[l_idx]
+    #     q_from_mvar = net.res_line.q_from_mvar.at[l_idx]
         
-        col = (
-            "#ff0000" if violations["line_over"].at[l_idx] else utilisation_colour(util)
-        )
+    #     col = (
+    #         "#ff0000" if violations["line_over"].at[l_idx] else utilisation_colour(util)
+    #     )
         
-        # Enhanced hover template with more details
-        hover_text = (
-            f"<b>Line {l_idx}</b><br>"
-            f"From Bus {fb} → To Bus {tb}<br>"
-            f"Loading: {util:.1f}%<br>"
-            f"Current: {current_ka:.2f} kA<br>"
-            f"Power: {p_from_mw:.2f} MW<br>"
-            f"Reactive: {q_from_mvar:.2f} MVAr<br>"
-            f"Length: {line.length_km:.2f} km<br>"
-            f"Type: {line.std_type}"
-            "<extra></extra>"
-        )
+    #     # Enhanced hover template with more details
+    #     hover_text = (
+    #         f"<b>Line {l_idx}</b><br>"
+    #         f"From Bus {fb} → To Bus {tb}<br>"
+    #         f"Loading: {util:.1f}%<br>"
+    #         f"Current: {current_ka:.2f} kA<br>"
+    #         f"Power: {p_from_mw:.2f} MW<br>"
+    #         f"Reactive: {q_from_mvar:.2f} MVAr<br>"
+    #         f"Length: {line.length_km:.2f} km<br>"
+    #         f"Type: {line.std_type}"
+    #         "<extra></extra>"
+    #     )
         
-        fig.add_trace(
-            go.Scatter(
-                x=[bus_x[fb], bus_x[tb]],
-                y=[bus_y[fb], bus_y[tb]],
-                mode="lines",
-                line=dict(color=col, width=4),
-                hovertemplate=hover_text,
-                showlegend=False,
-            )
-        )
+    #     fig.add_trace(
+    #         go.Scatter(
+    #             x=[bus_x[fb], bus_x[tb]],
+    #             y=[bus_y[fb], bus_y[tb]],
+    #             mode="lines",
+    #             line=dict(color=col, width=4),
+    #             hovertemplate=hover_text,
+    #             showlegend=False,
+    #         )
+    #     )
 
     # Plot transformers with enhanced hovers
     for t_idx, trafo in net.trafo.iterrows():
