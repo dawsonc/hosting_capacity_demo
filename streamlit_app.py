@@ -30,7 +30,7 @@ def add_or_update_pv(net: pp.pandapowerNet, *, bus: int, p_kw: float) -> None:
         p_kw: PV capacity in kW (positive = generation)
     """
     name = "PV"
-    p_mw = -p_kw / 1000  # Negative for generation in pandapower
+    p_mw = p_kw / 1000
     existing = net.sgen[net.sgen.name == name]
     if not existing.empty:
         net.sgen.loc[existing.index, "p_mw"] = p_mw
