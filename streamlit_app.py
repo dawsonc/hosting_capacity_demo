@@ -236,7 +236,7 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
         
         # Transformer square positioned above connection line center
         center_x = (bus_x[fb] + bus_x[tb]) / 2
-        center_y = (bus_y[fb] + bus_y[tb]) / 2 + 0.3  # Offset above the line
+        center_y = (bus_y[fb] + bus_y[tb]) / 2 + 0.03  # Offset above the line
         
         hover_text = (
             f"<b>Transformer {t_idx}</b><br>"
