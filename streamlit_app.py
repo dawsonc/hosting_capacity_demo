@@ -213,7 +213,6 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
 
     pv_x = [bus_x[bus] for bus in [pv_bus]]
     pv_y = [bus_y[bus] for bus in [pv_bus]]
-    pv_power = [-p * 1000 for p in pv_generators.p_mw.values]  # Convert back to kW
     
     fig.add_trace(
         go.Scatter(
@@ -227,7 +226,6 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
                 line=dict(width=2, color="#FF8C00"),  # Orange border
             ),
             hovertemplate="PV Generator<br>Bus: %{customdata[0]}<br>Capacity: %{customdata[1]:.0f} kW<extra></extra>",
-            customdata=list(zip(pv_buses, pv_power)),
             name="PV Generator",
             showlegend=True,
         )
