@@ -255,7 +255,7 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
                 y=[center_y],
                 mode="markers",
                 marker=dict(
-                    size=36,
+                    size=28,
                     color="rgba(0,0,0,1)",  # Fully transparent
                     line=dict(width=0),
                     symbol="square",
