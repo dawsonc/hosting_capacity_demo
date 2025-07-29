@@ -226,27 +226,27 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
             )
         )
 
-    # Plot buses
-    fig.add_trace(
-        go.Scatter(
-            x=bus_x,
-            y=bus_y,
-            mode="markers+text",
-            marker=dict(
-                size=14,
-                color=[voltage_colour(v) for v in net.res_bus.vm_pu],
-                line=dict(width=1, color="#000000"),
-            ),
-            text=[f"{i}" for i in net.bus.index],
-            textposition="top center",
-            hovertemplate="<b>Bus %{text}</b><br>Voltage: %{customdata[0]:.3f} p.u.<br>Voltage: %{customdata[1]:.1f} kV<extra></extra>",
-            customdata=np.column_stack([
-                net.res_bus.vm_pu.values,
-                net.res_bus.vm_pu.values * net.bus.vn_kv.values
-            ]),
-            showlegend=False,
-        )
-    )
+    # # Plot buses
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x=bus_x,
+    #         y=bus_y,
+    #         mode="markers+text",
+    #         marker=dict(
+    #             size=14,
+    #             color=[voltage_colour(v) for v in net.res_bus.vm_pu],
+    #             line=dict(width=1, color="#000000"),
+    #         ),
+    #         text=[f"{i}" for i in net.bus.index],
+    #         textposition="top center",
+    #         hovertemplate="<b>Bus %{text}</b><br>Voltage: %{customdata[0]:.3f} p.u.<br>Voltage: %{customdata[1]:.1f} kV<extra></extra>",
+    #         customdata=np.column_stack([
+    #             net.res_bus.vm_pu.values,
+    #             net.res_bus.vm_pu.values * net.bus.vn_kv.values
+    #         ]),
+    #         showlegend=False,
+    #     )
+    # )
 
     pv_x = [bus_x[bus] for bus in [pv_bus]]
     pv_y = [bus_y[bus] for bus in [pv_bus]]
