@@ -154,40 +154,74 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
     # Get bus coordinates
     bus_x, bus_y = get_bus_coordinates(net)
 
-    # Plot lines
+    # Plot lines with enhanced hovers
     for l_idx, line in net.line.iterrows():
         fb, tb = line.from_bus, line.to_bus
         util = net.res_line.loading_percent.at[l_idx]
+        current_ka = net.res_line.i_ka.at[l_idx]
+        p_from_mw = net.res_line.p_from_mw.at[l_idx]
+        q_from_mvar = net.res_line.q_from_mvar.at[l_idx]
+        
         col = (
             "#ff0000" if violations["line_over"].at[l_idx] else utilisation_colour(util)
         )
+        
+        # Enhanced hover template with more details
+        hover_text = (
+            f"<b>Line {l_idx}</b><br>"
+            f"From Bus {fb} → To Bus {tb}<br>"
+            f"Loading: {util:.1f}%<br>"
+            f"Current: {current_ka:.2f} kA<br>"
+            f"Power: {p_from_mw:.2f} MW<br>"
+            f"Reactive: {q_from_mvar:.2f} MVAr<br>"
+            f"Length: {line.length_km:.2f} km<br>"
+            f"Type: {line.std_type}"
+            "<extra></extra>"
+        )
+        
         fig.add_trace(
             go.Scatter(
                 x=[bus_x[fb], bus_x[tb]],
                 y=[bus_y[fb], bus_y[tb]],
                 mode="lines",
                 line=dict(color=col, width=4),
-                hovertemplate=f"Line {l_idx}<br>Loading: {util:.1f}%<extra></extra>",
+                hovertemplate=hover_text,
                 showlegend=False,
             )
         )
 
-    # Plot transformers
+    # Plot transformers with enhanced hovers
     for t_idx, trafo in net.trafo.iterrows():
         fb, tb = trafo.hv_bus, trafo.lv_bus
         util = net.res_trafo.loading_percent.at[t_idx]
+        p_hv_mw = net.res_trafo.p_hv_mw.at[t_idx]
+        q_hv_mvar = net.res_trafo.q_hv_mvar.at[t_idx]
+        
         col = (
             "#ff0000"
             if violations["trafo_over"].at[t_idx]
             else utilisation_colour(util)
         )
+        
+        # Enhanced hover template for transformers
+        hover_text = (
+            f"<b>Transformer {t_idx}</b><br>"
+            f"HV Bus {fb} → LV Bus {tb}<br>"
+            f"Loading: {util:.1f}%<br>"
+            f"Power: {p_hv_mw:.2f} MW<br>"
+            f"Reactive: {q_hv_mvar:.2f} MVAr<br>"
+            f"Capacity: {trafo.sn_mva:.1f} MVA<br>"
+            f"Voltage: {trafo.vn_hv_kv:.1f}/{trafo.vn_lv_kv:.1f} kV"
+            "<extra></extra>"
+        )
+        
         fig.add_trace(
             go.Scatter(
                 x=[bus_x[fb], bus_x[tb]],
                 y=[bus_y[fb], bus_y[tb]],
                 mode="lines",
                 line=dict(color=col, width=6, dash="dash"),
-                hovertemplate=f"Trafo {t_idx}<br>Loading: {util:.1f}%<extra></extra>",
+                hovertemplate=hover_text,
                 showlegend=False,
             )
         )
@@ -205,8 +239,11 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
             ),
             text=[f"{i}" for i in net.bus.index],
             textposition="top center",
-            hovertemplate="Bus %{text}<br>V=%{customdata[0]:.3f} p.u.<extra></extra>",
-            customdata=np.expand_dims(net.res_bus.vm_pu.values, axis=1),
+            hovertemplate="<b>Bus %{text}</b><br>Voltage: %{customdata[0]:.3f} p.u.<br>Voltage: %{customdata[1]:.1f} kV<extra></extra>",
+            customdata=np.column_stack([
+                net.res_bus.vm_pu.values,
+                net.res_bus.vm_pu.values * net.bus.vn_kv.values
+            ]),
             showlegend=False,
         )
     )
