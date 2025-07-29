@@ -5,6 +5,7 @@ Interactive Hosting Capacity Analysis (HCA) demo built with pandapower and Strea
 
 from __future__ import annotations
 import copy
+import json
 
 import numpy as np
 import pandas as pd
