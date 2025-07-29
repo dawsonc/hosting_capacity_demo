@@ -22,7 +22,7 @@ def build_network() -> pp.pandapowerNet:
 
 def add_or_update_pv(net: pp.pandapowerNet, *, bus: int, p_kw: float) -> None:
     """Add or update PV generation at specified bus.
-    
+
     Args:
         net: pandapower network
         bus: Bus index for PV connection
@@ -40,10 +40,10 @@ def add_or_update_pv(net: pp.pandapowerNet, *, bus: int, p_kw: float) -> None:
 
 def run_study(net: pp.pandapowerNet) -> dict[str, pd.Series]:
     """Run power flow and identify violations.
-    
+
     Args:
         net: pandapower network
-        
+
     Returns:
         Dictionary of violation flags for lines, transformers, and buses
     """
@@ -63,10 +63,10 @@ def run_study(net: pp.pandapowerNet) -> dict[str, pd.Series]:
 
 def utilisation_colour(util: float) -> str:
     """Generate color based on utilization percentage.
-    
+
     Args:
         util: Utilization percentage (0-100+)
-        
+
     Returns:
         Hex color string
     """
@@ -86,10 +86,10 @@ def utilisation_colour(util: float) -> str:
 
 def voltage_colour(vm_pu: float) -> str:
     """Generate color based on voltage magnitude.
-    
+
     Args:
         vm_pu: Voltage magnitude in per unit
-        
+
     Returns:
         Hex color string (red for violations, green gradient for normal)
     """
@@ -102,22 +102,22 @@ def voltage_colour(vm_pu: float) -> str:
 
 def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
     """Extract bus coordinates from pandapower network.
-    
+
     Args:
         net: pandapower network
-        
+
     Returns:
         Tuple of (x_coords, y_coords) as pandas Series
     """
     # Check if bus_geodata exists (preferred method)
-    if hasattr(net, 'bus_geodata') and not net.bus_geodata.empty:
-        bus_x = net.bus_geodata['x']
-        bus_y = net.bus_geodata['y']
+    if hasattr(net, "bus_geodata") and not net.bus_geodata.empty:
+        bus_x = net.bus_geodata["x"]
+        bus_y = net.bus_geodata["y"]
     else:
         # Fallback: check if 'geo' column exists in bus table
-        if 'geo' in net.bus.columns and not net.bus['geo'].isna().all():
+        if "geo" in net.bus.columns and not net.bus["geo"].isna().all():
             # Handle different geo data formats
-            geo_data = net.bus['geo']
+            geo_data = net.bus["geo"]
             if isinstance(geo_data.iloc[0], (tuple, list)):
                 bus_x = geo_data.apply(lambda g: g[0] if g is not None else 0)
                 bus_y = geo_data.apply(lambda g: g[1] if g is not None else 0)
@@ -129,30 +129,32 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
             # Generate simple grid layout as fallback
             bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
             bus_y = pd.Series([i // 5 for i in net.bus.index], index=net.bus.index)
-    
+
     return bus_x, bus_y
 
 
 def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
     """Create interactive network plot with violations highlighted.
-    
+
     Args:
         net: pandapower network with results
         violations: Dictionary of violation flags
-        
+
     Returns:
         Plotly figure object
     """
     fig = go.Figure()
-    
+
     # Get bus coordinates
     bus_x, bus_y = get_bus_coordinates(net)
-    
+
     # Plot lines
     for l_idx, line in net.line.iterrows():
         fb, tb = line.from_bus, line.to_bus
         util = net.res_line.loading_percent.at[l_idx]
-        col = "#ff0000" if violations["line_over"].at[l_idx] else utilisation_colour(util)
+        col = (
+            "#ff0000" if violations["line_over"].at[l_idx] else utilisation_colour(util)
+        )
         fig.add_trace(
             go.Scatter(
                 x=[bus_x[fb], bus_x[tb]],
@@ -163,12 +165,16 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
                 showlegend=False,
             )
         )
-    
+
     # Plot transformers
     for t_idx, trafo in net.trafo.iterrows():
         fb, tb = trafo.hv_bus, trafo.lv_bus
         util = net.res_trafo.loading_percent.at[t_idx]
-        col = "#ff0000" if violations["trafo_over"].at[t_idx] else utilisation_colour(util)
+        col = (
+            "#ff0000"
+            if violations["trafo_over"].at[t_idx]
+            else utilisation_colour(util)
+        )
         fig.add_trace(
             go.Scatter(
                 x=[bus_x[fb], bus_x[tb]],
@@ -179,7 +185,7 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
                 showlegend=False,
             )
         )
-    
+
     # Plot buses
     fig.add_trace(
         go.Scatter(
@@ -198,7 +204,7 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
             showlegend=False,
         )
     )
-    
+
     fig.update_layout(
         margin=dict(l=20, r=20, t=20, b=20),
         xaxis=dict(visible=False),
@@ -218,27 +224,29 @@ def main() -> None:
         return build_network()
 
     net = copy.deepcopy(get_base_network())
-    
+
     st.sidebar.header("Study parameters")
-    
+
     # Debug info
     if st.sidebar.checkbox("Show debug info"):
         st.sidebar.write(f"Network has {len(net.bus)} buses")
-        if hasattr(net, 'bus_geodata'):
+        if hasattr(net, "bus_geodata"):
             st.sidebar.write(f"bus_geodata shape: {net.bus_geodata.shape}")
         st.sidebar.write(f"Bus geo column exists: {'geo' in net.bus.columns}")
-    
-    pv_bus = st.sidebar.selectbox("PV connection bus", options=list(net.bus.index), index=5)
+
+    pv_bus = st.sidebar.selectbox(
+        "PV connection bus", options=list(net.bus.index), index=5
+    )
     pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 500, value=0, step=10)
     st.sidebar.write(f"**PV @ bus {pv_bus}:** {pv_kw} kW")
-    
+
     add_or_update_pv(net, bus=pv_bus, p_kw=pv_kw)
 
     if st.sidebar.button("➡️ Run study", use_container_width=True):
         violations = run_study(net)
         fig = plot_network(net, violations)
         st.plotly_chart(fig, use_container_width=True)
-        
+
         if any(v.any() for v in violations.values()):
             st.error("Thermal or voltage violations detected.")
         else:
