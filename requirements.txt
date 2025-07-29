@@ -3,3 +3,4 @@ pandapower
 plotly
 pandas
 numpy
+numba
