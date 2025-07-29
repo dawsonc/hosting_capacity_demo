@@ -337,7 +337,7 @@ def main() -> None:
         st.sidebar.write(f"Bus geo column exists: {'geo' in net.bus.columns}")
 
     pv_bus = st.sidebar.selectbox(
-        "PV connection bus", options=list(net.bus.index), index=33
+        "PV connection bus", options=list(net.bus.index), index=list(net.bus.index).index(55)
     )
     pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 5000, value=0, step=10)
     st.sidebar.write(f"**PV @ bus {pv_bus}:** {pv_kw} kW")
