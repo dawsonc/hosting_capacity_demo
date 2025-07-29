@@ -4,6 +4,7 @@ Interactive Hosting Capacity Analysis (HCA) demo built with pandapower and Strea
 """
 
 from __future__ import annotations
+import copy
 
 import numpy as np
 import pandas as pd
@@ -125,7 +126,7 @@ def main() -> None:
     def get_base_network() -> pp.pandapowerNet:
         return build_network()
 
-    net = get_base_network().copy()
+    net = copy.deepcopy(get_base_network())
     st.sidebar.header("Study parameters")
     print(net)
     pv_bus = st.sidebar.selectbox("PV connection bus", options=list(net.bus.index), index=5)
