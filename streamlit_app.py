@@ -139,7 +139,7 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
 
     return bus_x, bus_y
 
-def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
+def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus: int) -> go.Figure:
     """Create interactive network plot with violations highlighted.
 
     Args:
@@ -211,6 +211,28 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
         )
     )
 
+    pv_x = [bus_x[bus] for bus in [pv_bus]]
+    pv_y = [bus_y[bus] for bus in [pv_bus]]
+    pv_power = [-p * 1000 for p in pv_generators.p_mw.values]  # Convert back to kW
+    
+    fig.add_trace(
+        go.Scatter(
+            x=pv_x,
+            y=pv_y,
+            mode="markers",
+            marker=dict(
+                symbol="star",
+                size=20,
+                color="#FFD700",  # Gold color
+                line=dict(width=2, color="#FF8C00"),  # Orange border
+            ),
+            hovertemplate="PV Generator<br>Bus: %{customdata[0]}<br>Capacity: %{customdata[1]:.0f} kW<extra></extra>",
+            customdata=list(zip(pv_buses, pv_power)),
+            name="PV Generator",
+            showlegend=True,
+        )
+    )
+
     fig.update_layout(
         margin=dict(l=20, r=20, t=20, b=20),
         xaxis=dict(visible=False),
@@ -243,14 +265,14 @@ def main() -> None:
     pv_bus = st.sidebar.selectbox(
         "PV connection bus", options=list(net.bus.index), index=5
     )
-    pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 500, value=0, step=10)
+    pv_kw = st.sidebar.slider("PV export capacity [kW]", 0, 5000, value=0, step=10)
     st.sidebar.write(f"**PV @ bus {pv_bus}:** {pv_kw} kW")
 
     add_or_update_pv(net, bus=pv_bus, p_kw=pv_kw)
 
     if st.sidebar.button("➡️ Run study", use_container_width=True):
         violations = run_study(net)
-        fig = plot_network(net, violations)
+        fig = plot_network(net, violations, pv_bus)
         st.plotly_chart(fig, use_container_width=True)
 
         if any(v.any() for v in violations.values()):
