@@ -242,7 +242,7 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
 def main() -> None:
     """Main Streamlit application."""
     st.set_page_config(page_title="Hosting Capacity Analysis", layout="wide")
-    st.title("📈 Hosting Capacity Analysis (pandapower + Streamlit)")
+    st.title("⚡Hosting Capacity Analysis")
 
     @st.cache_resource
     def get_base_network() -> pp.pandapowerNet:
@@ -273,10 +273,50 @@ def main() -> None:
         fig = plot_network(net, violations, pv_bus)
         st.plotly_chart(fig, use_container_width=True)
 
-        if any(v.any() for v in violations.values()):
-            st.error("Thermal or voltage violations detected.")
+        # Check for violations and display detailed information
+        has_violations = any(v.any() for v in violations.values())
+        
+        if has_violations:
+            st.error("⚠️ **Network violations detected:**")
+            
+            # Line overloads
+            if violations["line_over"].any():
+                overloaded_lines = net.res_line[violations["line_over"]]
+                st.write("**Line overloads:**")
+                for idx in overloaded_lines.index:
+                    loading = overloaded_lines.loc[idx, "loading_percent"]
+                    from_bus = net.line.loc[idx, "from_bus"]
+                    to_bus = net.line.loc[idx, "to_bus"]
+                    st.write(f"• Line {idx} ({from_bus}→{to_bus}): {loading:.1f}% loading")
+            
+            # Transformer overloads
+            if violations["trafo_over"].any():
+                overloaded_trafos = net.res_trafo[violations["trafo_over"]]
+                st.write("**Transformer overloads:**")
+                for idx in overloaded_trafos.index:
+                    loading = overloaded_trafos.loc[idx, "loading_percent"]
+                    hv_bus = net.trafo.loc[idx, "hv_bus"]
+                    lv_bus = net.trafo.loc[idx, "lv_bus"]
+                    st.write(f"• Trafo {idx} ({hv_bus}→{lv_bus}): {loading:.1f}% loading")
+            
+            # Overvoltage violations
+            if violations["overvoltage"].any():
+                overvolt_buses = net.res_bus[violations["overvoltage"]]
+                st.write("**Overvoltage violations (>1.05 p.u.):**")
+                for idx in overvolt_buses.index:
+                    voltage = overvolt_buses.loc[idx, "vm_pu"]
+                    st.write(f"• Bus {idx}: {voltage:.3f} p.u. ({voltage*100:.1f}%)")
+            
+            # Undervoltage violations
+            if violations["undervoltage"].any():
+                undervolt_buses = net.res_bus[violations["undervoltage"]]
+                st.write("**Undervoltage violations (<0.95 p.u.):**")
+                for idx in undervolt_buses.index:
+                    voltage = undervolt_buses.loc[idx, "vm_pu"]
+                    st.write(f"• Bus {idx}: {voltage:.3f} p.u. ({voltage*100:.1f}%)")
+                    
         else:
-            st.success("No thermal or voltage violations detected.")
+            st.success("✅ No thermal or voltage violations detected.")
 
 
 if __name__ == "__main__":
