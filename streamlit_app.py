@@ -1,4 +1,4 @@
- """streamlit_app.py
+"""streamlit_app.py
 
 Interactive Hosting Capacity Analysis (HCA) demo built with **pandapower** and **Streamlit**.
 
