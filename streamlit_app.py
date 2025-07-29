@@ -222,21 +222,9 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
             else utilisation_colour(util)
         )
         
-        # Transformer line visualization (no hover)
-        fig.add_trace(
-            go.Scatter(
-                x=[bus_x[fb], bus_x[tb]],
-                y=[bus_y[fb], bus_y[tb]],
-                mode="lines",
-                line=dict(color=col, width=6, dash="dash"),
-                hoverinfo="skip",
-                showlegend=False,
-            )
-        )
-        
         # Transformer square positioned above connection line center
         center_x = (bus_x[fb] + bus_x[tb]) / 2
-        center_y = (bus_y[fb] + bus_y[tb]) / 2 + 0.03  # Offset above the line
+        center_y = (bus_y[fb] + bus_y[tb]) / 2 + 0.01  # Offset above the line
         
         hover_text = (
             f"<b>Transformer {t_idx}</b><br>"
@@ -261,6 +249,18 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series], pv_bus
                     symbol="square",
                 ),
                 hovertemplate=hover_text,
+                showlegend=False,
+            )
+        )
+
+        # Transformer line visualization (no hover)
+        fig.add_trace(
+            go.Scatter(
+                x=[center_x, bus_x[tb]],
+                y=[center_y, bus_y[tb]],
+                mode="lines",
+                line=dict(color=col, width=6, dash="dash"),
+                hoverinfo="skip",
                 showlegend=False,
             )
         )
