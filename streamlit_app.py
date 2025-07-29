@@ -12,13 +12,9 @@ import streamlit as st
 import pandapower as pp
 import pandapower.networks as pn
 
-
 def build_network() -> pp.pandapowerNet:
-    net = pn.create_cigre_network_lv()
-    if net.bus_geodata.empty or net.bus_geodata.isna().any().any():
-        pp.plotting.create_generic_coordinates(net)
+    net = pn.mv_oberrhein()
     return net
-
 
 def add_or_update_pv(net: pp.pandapowerNet, *, bus: int, p_kw: float) -> None:
     name = "PV"
@@ -29,7 +25,6 @@ def add_or_update_pv(net: pp.pandapowerNet, *, bus: int, p_kw: float) -> None:
         net.sgen.loc[existing.index, "bus"] = bus
     else:
         pp.create_sgen(net, bus, p_mw=p_mw, name=name)
-
 
 def run_study(net: pp.pandapowerNet) -> dict[str, pd.Series]:
     pp.runpp(net, init="auto")
@@ -45,7 +40,6 @@ def run_study(net: pp.pandapowerNet) -> dict[str, pd.Series]:
         "undervoltage": undervoltage,
     }
 
-
 def utilisation_colour(util: float) -> str:
     x = np.clip(util / 100, 0, 1)
     if x <= 0.5:
@@ -60,14 +54,12 @@ def utilisation_colour(util: float) -> str:
         b = int((1 - t) * 255 + t * 43)
     return f"#{r:02x}{g:02x}{b:02x}"
 
-
 def voltage_colour(vm_pu: float) -> str:
     if vm_pu < 0.95 or vm_pu > 1.05:
         return "#ff0000"
     t = (vm_pu - 0.95) / 0.10
     g = int(255 * t)
     return f"#00{g:02x}00"
-
 
 def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
     fig = go.Figure()
@@ -125,7 +117,6 @@ def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.
     )
     return fig
 
-
 def main() -> None:
     st.set_page_config(page_title="Hosting Capacity Analysis", layout="wide")
     st.title("\U0001F4C8 Hosting Capacity Analysis (pandapower + Streamlit)")
@@ -149,7 +140,6 @@ def main() -> None:
             st.error("Thermal or voltage violations detected.")
         else:
             st.success("No thermal or voltage violations detected.")
-
 
 if __name__ == "__main__":
     main()
