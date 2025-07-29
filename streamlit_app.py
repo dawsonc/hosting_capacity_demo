@@ -118,16 +118,25 @@ def get_bus_coordinates(net: pp.pandapowerNet) -> tuple[pd.Series, pd.Series]:
         # Fallback: check if 'geo' column exists in bus table
         if "geo" in net.bus.columns and not net.bus["geo"].isna().all():
             geo_data = net.bus["geo"]
-            # GeoJSON format: {"coordinates": [lon, lat], "type": "Point"}
-            bus_x = geo_data.apply(lambda g: g['coordinates'][0] if g is not None and 'coordinates' in g else 0)
-            bus_y = geo_data.apply(lambda g: g['coordinates'][1] if g is not None and 'coordinates' in g else 0)
+            # Parse JSON strings and extract coordinates
+            def extract_coord(geo_str, coord_idx):
+                """Extract coordinate from geo JSON string."""
+                if pd.isna(geo_str) or geo_str is None:
+                    return 0
+                try:
+                    geo_dict = json.loads(geo_str) if isinstance(geo_str, str) else geo_str
+                    return geo_dict.get('coordinates', [0, 0])[coord_idx]
+                except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+                    return 0
+            
+            bus_x = geo_data.apply(lambda g: extract_coord(g, 0))
+            bus_y = geo_data.apply(lambda g: extract_coord(g, 1))
         else:
             # Generate simple grid layout as fallback
             bus_x = pd.Series([i % 5 for i in net.bus.index], index=net.bus.index)
             bus_y = pd.Series([i // 5 for i in net.bus.index], index=net.bus.index)
 
     return bus_x, bus_y
-
 
 def plot_network(net: pp.pandapowerNet, violations: dict[str, pd.Series]) -> go.Figure:
     """Create interactive network plot with violations highlighted.
